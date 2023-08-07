@@ -132,7 +132,7 @@ process crossmap{
     file chain_file from chain_file_ch.collect()
 
     output:
-    set val(study_name), file("crossmapped_plink.bed"), file("crossmapped_plink.bim"), file("crossmapped_plink.fam") into crossmapped
+    set val(study_name), file("crossmapped_plink.bed"), file("crossmapped_plink.bim"), file("crossmapped_plink.fam") into (crossmapped, InputToSnpQcFromCrossmap)
 
     when:
     skip_crossmap == false
@@ -150,6 +150,24 @@ process crossmap{
     plink2 --bfile ${study_name} --exclude excluded_ids.txt --make-bed --output-chr MT --out crossmapped_plink
     awk -F'\t' 'BEGIN {OFS=FS} {print \$1,\$4,0,\$2,\$5,\$6}' crossmap_output.bed > crossmapped_plink.bim
     """
+}
+
+process CalculateSnpQcMetricsPostCrossmap {
+
+    tag {"CalculateSnpQcMetricsPostCrossmap"}
+
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+
+    input:
+      tuple study_name, path(study_name_bed), path(study_name_bim), path(study_name_fam) from InputToSnpQcFromCrossmap
+
+    output:
+      file ("af_from_crossmap.chrAll.txt") into af_file_from_crossmap
+
+    script:
+      """
+      plink2 --bfile ${study_name} --freq cols='+pos' --out af_from_crossmap.chrAll.txt
+      """
 }
 
 process sort_bed{
@@ -191,7 +209,7 @@ process harmonize_hg38{
     tuple file(vcf_file), file(vcf_file_index) from ref_panel_harmonise_genotypes_hg38.collect()
 
     output:
-    tuple val(chr), file("harmonised.bed"), file("harmonised.bim"), file("harmonised.fam") into harmonised_split_genotypes_hg38_ch
+    tuple val(chr), file("harmonised.bed"), file("harmonised.bim"), file("harmonised.fam") into (harmonised_split_genotypes_hg38_ch, InputToSnpQcFromGh)
 
     script:
     """
@@ -205,13 +223,31 @@ process harmonize_hg38{
     """
 }
 
+process CalculateSnpQcMetricsPostGh {
+
+    tag {"CalculateSnpQcMetricsPostGh_$chr"}
+
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+
+    input:
+      tuple chr, path(study_name_bed), path(study_name_bim), path(study_name_fam) from InputToSnpQcFromGh
+
+    output:
+      file ("af_from_gh.chr${chr}.txt") into af_file_from_gh
+
+    script:
+      """
+      plink2 --bfile ${study_name_bed.baseName} --freq cols='+pos' --out af_from_gh.chr${chr}.txt
+      """
+}
+
 process plink_to_vcf{
 
     input:
     set val(chr), file(study_name_bed), file(study_name_bim), file(study_name_fam) from harmonised_split_genotypes_hg38_ch
 
     output:
-    tuple val(chr), file("chr{chr}_harmonised_hg38.vcf") into harmonized_split_hg38_vcf_ch
+    tuple val(chr), file("chr${chr}_harmonised_hg38.vcf") into harmonized_split_hg38_vcf_ch
 
     script:
     """
@@ -227,7 +263,7 @@ process vcf_fixref_hg38{
     set file(vcf_file), file(vcf_file_index) from ref_panel_fixref_genotypes_hg38.collect()
 
     output:
-    tuple val(chr), file("chr{chr}_fixref_hg38.vcf.gz") into fixed_to_filter_split
+    tuple val(chr), file("chr${chr}_fixref_hg38.vcf.gz") into (fixed_to_filter_split, InputToSnpQcFromFixref)
 
     script:
     """
@@ -239,6 +275,24 @@ process vcf_fixref_hg38{
     """
 }
 
+process CalculateSnpQcMetricsPostFixref {
+
+    tag {"CalculateSnpQcMetricsPostFixref_$chr"}
+
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+
+    input:
+      tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcFromFixref
+
+    output:
+      file ("af_post_fixref.chr${chr}.txt") into af_file_from_fixref
+
+    script:
+      """
+      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_post_fixref.chr${chr}.txt
+      """
+}
+
 process filter_preimpute_vcf{
 
     publishDir "${params.outdir}/preimpute/", mode: 'copy',
@@ -248,7 +302,7 @@ process filter_preimpute_vcf{
     tuple val(chr), file(input_vcf) from fixed_to_filter_split
 
     output:
-    tuple val(chr), file("filtered.vcf.gz"), file("filtered.vcf.gz.csi") into split_vcf_input
+    tuple val(chr), file("filtered.vcf.gz"), file("filtered.vcf.gz.csi") into (split_vcf_input, InputToSnpQcPrePhasing)
     file("filtered.vcf.gz") into missingness_input_split
 
     script:
@@ -270,6 +324,24 @@ process filter_preimpute_vcf{
     #Index the output file
     bcftools index filtered.vcf.gz
     """
+}
+
+process CalculateSnpQcMetricsPrePhasing {
+
+    tag {"CalculateSnpQcMetricsPrePhasing_$chr"}
+
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+
+    input:
+      tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcPrePhasing
+
+    output:
+      file ("af_before_phasing.chr${chr}.txt") into af_file_before_phasing
+
+    script:
+      """
+      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_before_phasing.chr${chr}.txt
+      """
 }
 
 process calculate_missingness{
@@ -299,7 +371,7 @@ process eagle_prephasing{
     file phasing_reference from phasing_ref_ch.collect()
 
     output:
-    tuple val(chromosome), file("chr${chromosome}.phased.vcf.gz") into phased_vcf_cf
+    tuple val(chromosome), file("chr${chromosome}.phased.vcf.gz") into (phased_vcf_cf, InputToSnpQcPostPhasing)
 
     script:
     """
@@ -310,6 +382,24 @@ process eagle_prephasing{
     --outPrefix=chr${chromosome}.phased \
     --numThreads=8
     """
+}
+
+process CalculateSnpQcMetricsPostPhasing {
+
+    tag {"CalculateSnpQcMetricsPostPhasing_$chr"}
+
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+
+    input:
+      tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcPostPhasing
+
+    output:
+      file ("af_after_phasing.chr${chr}.txt") into af_file_after_phasing
+
+    script:
+      """
+      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_after_phasing.chr${chr}.txt
+      """
 }
 
 phased_vcf_cf2 = phased_vcf_cf.combine(exp_mat_ch)

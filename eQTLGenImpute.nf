@@ -231,7 +231,7 @@ process CalculateSnpQcMetricsPostGh {
 
     container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
 
-    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.afreq", overwrite: true
 
     input:
       tuple chr, path(study_name_bed), path(study_name_bim), path(study_name_fam) from InputToSnpQcFromGh
@@ -285,7 +285,7 @@ process CalculateSnpQcMetricsPostFixref {
 
     container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
 
-    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.afreq", overwrite: true
 
     input:
       tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcFromFixref
@@ -338,7 +338,7 @@ process CalculateSnpQcMetricsPrePhasing {
 
     container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
 
-    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.afreq", overwrite: true
 
     input:
       tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcPrePhasing
@@ -398,7 +398,7 @@ process CalculateSnpQcMetricsPostPhasing {
 
     container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
 
-    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.afreq", overwrite: true
 
     input:
       tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcPostPhasing

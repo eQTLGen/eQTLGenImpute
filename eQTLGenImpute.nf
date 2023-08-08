@@ -156,6 +156,8 @@ process CalculateSnpQcMetricsPostCrossmap {
 
     tag {"CalculateSnpQcMetricsPostCrossmap"}
 
+    container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
+
     publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
 
     input:
@@ -227,6 +229,8 @@ process CalculateSnpQcMetricsPostGh {
 
     tag {"CalculateSnpQcMetricsPostGh_$chr"}
 
+    container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
+
     publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
 
     input:
@@ -279,6 +283,8 @@ process CalculateSnpQcMetricsPostFixref {
 
     tag {"CalculateSnpQcMetricsPostFixref_$chr"}
 
+    container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
+
     publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
 
     input:
@@ -329,6 +335,8 @@ process filter_preimpute_vcf{
 process CalculateSnpQcMetricsPrePhasing {
 
     tag {"CalculateSnpQcMetricsPrePhasing_$chr"}
+
+    container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
 
     publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
 
@@ -387,6 +395,8 @@ process eagle_prephasing{
 process CalculateSnpQcMetricsPostPhasing {
 
     tag {"CalculateSnpQcMetricsPostPhasing_$chr"}
+
+    container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
 
     publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
 

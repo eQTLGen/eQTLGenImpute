@@ -164,11 +164,11 @@ process CalculateSnpQcMetricsPostCrossmap {
       tuple study_name, path(study_name_bed), path(study_name_bim), path(study_name_fam) from InputToSnpQcFromCrossmap
 
     output:
-      file ("af_from_crossmap.chrAll.txt") into af_file_from_crossmap
+      file ("af_from_crossmap.chrAll.afreq") into af_file_from_crossmap
 
     script:
       """
-      plink2 --bfile ${study_name_bed.baseName} --freq cols='+pos' --out af_from_crossmap.chrAll.txt
+      plink2 --bfile ${study_name_bed.baseName} --freq cols='+pos' --out af_from_crossmap.chrAll
       """
 }
 
@@ -237,11 +237,11 @@ process CalculateSnpQcMetricsPostGh {
       tuple chr, path(study_name_bed), path(study_name_bim), path(study_name_fam) from InputToSnpQcFromGh
 
     output:
-      file ("af_from_gh.chr${chr}.txt") into af_file_from_gh
+      file ("af_from_gh.chr${chr}.afreq") into af_file_from_gh
 
     script:
       """
-      plink2 --bfile ${study_name_bed.baseName} --freq cols='+pos' --out af_from_gh.chr${chr}.txt
+      plink2 --bfile ${study_name_bed.baseName} --freq cols='+pos' --out af_from_gh.chr${chr}
       """
 }
 
@@ -291,11 +291,11 @@ process CalculateSnpQcMetricsPostFixref {
       tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcFromFixref
 
     output:
-      file ("af_post_fixref.chr${chr}.txt") into af_file_from_fixref
+      file ("af_post_fixref.chr${chr}.afreq") into af_file_from_fixref
 
     script:
       """
-      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_post_fixref.chr${chr}.txt
+      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_post_fixref.chr${chr}
       """
 }
 
@@ -344,11 +344,11 @@ process CalculateSnpQcMetricsPrePhasing {
       tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcPrePhasing
 
     output:
-      file ("af_before_phasing.chr${chr}.txt") into af_file_before_phasing
+      file ("af_before_phasing.chr${chr}.afreq") into af_file_before_phasing
 
     script:
       """
-      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_before_phasing.chr${chr}.txt
+      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_before_phasing.chr${chr}
       """
 }
 
@@ -404,11 +404,11 @@ process CalculateSnpQcMetricsPostPhasing {
       tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcPostPhasing
 
     output:
-      file ("af_after_phasing.chr${chr}.txt") into af_file_after_phasing
+      file ("af_after_phasing.chr${chr}.afreq") into af_file_after_phasing
 
     script:
       """
-      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_after_phasing.chr${chr}.txt
+      plink2 --vcf ${InputToSnpQc} --freq cols='+pos' --out af_after_phasing.chr${chr}
       """
 }
 

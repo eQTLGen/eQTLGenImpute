@@ -168,7 +168,7 @@ process CalculateSnpQcMetricsPostCrossmap {
 
     script:
       """
-      plink2 --bfile ${study_name} --freq cols='+pos' --out af_from_crossmap.chrAll.txt
+      plink2 --bfile ${study_name_bed.baseName} --freq cols='+pos' --out af_from_crossmap.chrAll.txt
       """
 }
 

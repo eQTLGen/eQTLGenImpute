@@ -275,7 +275,7 @@ process vcf_fixref_hg38{
     bcftools index ${input_vcf}.gz
 
     bcftools +fixref ${input_vcf}.gz -- -f ${fasta} -i ${vcf_file} | \
-    bcftools norm --check-ref x -f ${fasta} -Oz -o chr{chr}_fixref_hg38.vcf.gz
+    bcftools norm --check-ref x -f ${fasta} -Oz -o chr${chr}_fixref_hg38.vcf.gz
     """
 }
 

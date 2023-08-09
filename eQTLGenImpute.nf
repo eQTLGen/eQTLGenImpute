@@ -137,7 +137,7 @@ process CalculateSnpQcMetricsPreCrossmap {
       tuple study_name, path(study_name_bed), path(study_name_bim), path(study_name_fam) from bfile_ch_to_af
 
     output:
-      file ("af_input.chrAll.afreq") into af_file_from_crossmap
+      file ("af_input.chrAll.afreq") into af_file_from_input
 
     script:
       """

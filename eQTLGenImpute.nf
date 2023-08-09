@@ -158,7 +158,7 @@ process CalculateSnpQcMetricsPostCrossmap {
 
     container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
 
-    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.txt", overwrite: true
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.afreq", overwrite: true
 
     input:
       tuple study_name, path(study_name_bed), path(study_name_bim), path(study_name_fam) from InputToSnpQcFromCrossmap

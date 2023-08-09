@@ -44,7 +44,7 @@ Channel
     .fromFilePairs("${params.qcdata}/outputfolder_gen/gen_data_QCd/*.{bed,bim,fam}", size: -1)
     .ifEmpty {exit 1, "Input genotype files not found!"}
     .map { it.flatten() }
-    .set { bfile_ch }
+    .into { bfile_ch; bfile_ch_to_af }
 
 Channel
     .fromPath("${params.qcdata}/outputfolder_exp/exp_data_QCd/exp_data_preprocessed.txt")
@@ -124,6 +124,26 @@ summary['Script dir']               = workflow.projectDir
 summary['Config Profile']           = workflow.profile
 log.info summary.collect { k,v -> "${k.padRight(21)}: $v" }.join("\n")
 log.info "========================================="
+
+process CalculateSnpQcMetricsPreCrossmap {
+
+    tag {"CalculateSnpQcMetricsPreCrossmap"}
+
+    container 'quay.io/cawarmerdam/eqtlgenimpute:v0.3'
+
+    publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.afreq", overwrite: true
+
+    input:
+      tuple study_name, path(study_name_bed), path(study_name_bim), path(study_name_fam) from bfile_ch_to_af
+
+    output:
+      file ("af_input.chrAll.afreq") into af_file_from_crossmap
+
+    script:
+      """
+      plink2 --bfile ${study_name_bed.baseName} --freq cols='+pos' --out af_input.chrAll
+      """
+}
 
 process crossmap{
 

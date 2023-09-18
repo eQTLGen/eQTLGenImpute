@@ -54,7 +54,7 @@ Channel
 Channel
     .fromPath(params.ref_panel_hg38)
     .map { ref -> [file("${ref}.vcf.gz"), file("${ref}.vcf.gz.tbi")] }
-    .into { ref_panel_harmonise_genotypes_hg38; ref_panel_fixref_genotypes_hg38 }
+    .into { ref_panel_harmonise_genotypes_hg38; ref_panel_fixref_genotypes_hg38; ref_panel_maf }
 
 Channel
     .fromPath( "${params.eagle_phasing_reference}*" )
@@ -167,7 +167,7 @@ process crossmap{
     awk '{print \$7}' crossmap_input.bed | sort > input_ids.txt
     awk '{print \$7}' crossmap_output.bed | sort > output_ids.txt
     comm -23 input_ids.txt output_ids.txt | awk '{split(\$0,a,"___"); print a[1]}' > excluded_ids.txt
-    plink2 --bfile ${study_name} --exclude excluded_ids.txt --make-bed --output-chr MT --out crossmapped_plink
+    plink2 --bfile ${study_name} --exclude excluded_ids.txt --make-bed --output-chr MT --out crossmapped_plink --keep-allele-order
     awk -F'\t' 'BEGIN {OFS=FS} {print \$1,\$4,0,\$2,\$5,\$6}' crossmap_output.bed > crossmapped_plink.bim
     """
 }
@@ -484,6 +484,63 @@ process filter_maf{
     bcftools +fill-tags ${vcf} -Ou -- -t AF,MAF \
     | bcftools filter -i 'INFO/MAF[0] > 0.01' -Oz -o chr${chromosome}.filtered.vcf.gz
     """
+}
+
+process extract_maf_ref{
+
+    input:
+    tuple file(vcf_file), file(vcf_file_index) from ref_panel_maf.collect()
+    
+    output:
+    file("ref_allele_frequencies.txt") into ref_af
+
+    script:
+    """
+    bcftools \
+    query -f '%ID\\t%CHROM\\t%POS\\t%REF\\t%ALT\\t%AF\\t%AF_EUR\\n' \
+    ${vcf_file} > ref_allele_frequencies.txt
+    """
+}
+
+process extract_maf_target{
+
+    input:
+    set val(chromosome), file(vcf) from imputed_vcf_filtered_cf
+
+    output:
+    file("*_AF.txt") into target_af
+
+    script:
+    """
+    bcftools \
+    query -f '%ID\\t%CHROM\\t%POS\\t%REF\\t%ALT\\t%AF\\t%IMPUTED\\t%TYPED\\t%R2\\n' \
+    ${vcf} > ${chromosome}_AF.txt
+    """
+}
+
+maf_check_ch = target_af.collect().combine(ref_af)
+
+process compare_MAF{
+
+    container = "quay.io/eqtlgen/popassign:v0.6"
+
+    publishDir "${params.outdir}/", mode: 'copy', pattern: "*.html", overwrite: true
+
+    input:
+    path files from maf_check_ch
+
+    output:
+    path "Report_ImputationQc.html" into report_output_ch
+
+    script:
+    """
+    # Make report
+    cp -L $baseDir/bin/Report_template.Rmd notebook.Rmd
+
+    R -e 'library(rmarkdown);rmarkdown::render("notebook.Rmd", "html_document", 
+    output_file = "Report_ImputationQc.html")'
+    """
+
 }
 
 workflow.onComplete {

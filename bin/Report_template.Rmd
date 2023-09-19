@@ -5,6 +5,8 @@ output:
   html_document:
     code_folding: hide
     toc: true
+params:
+  workflow_version: "NULL"
 ---
 
 ## QC of imputed data
@@ -74,3 +76,5 @@ very_supicious <- nrow(comb_f2[(AF_ALL > 0.8 & AF < 0.2) | (AF_ALL < 0.2 & AF > 
 There are `r suspicious` (`r round((suspicious/nrow(comb_f1)) * 100, digits = 3)`%) suspicious variants (AF difference from from 1000G ALL > 0.1; target AF >0.5 & ref AF <0.5 or vice versa).
 
 There are `r very_supicious` (`r round((very_supicious/nrow(comb_f2)) * 100, digits = 3)`%) very suspicious variants (Mach R^2^>0.4; target AF >0.8 and reference AF <0.2 or vice versa).
+
+workflow version: `r params$workflow_version`

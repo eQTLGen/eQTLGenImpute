@@ -101,6 +101,7 @@ summary['Pipeline Name']            = 'eqtlgenimpute'
 summary['Pipeline Version']         = workflow.manifest.version
 summary['Path to QCd input']        = params.qcdata
 summary['Cohort build']             = params.genome_build
+summary['Chain file']             = params.chain_file
 summary['Skip crossmap']             = skip_crossmap
 summary['Harmonisation ref panel hg38']  = params.ref_panel_hg38
 summary['Target reference genome hg38'] = params.target_ref

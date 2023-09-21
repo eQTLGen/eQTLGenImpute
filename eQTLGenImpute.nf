@@ -424,7 +424,7 @@ process CalculateSnpQcMetricsPostPhasing {
     publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.afreq", overwrite: true
 
     input:
-      tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcPostPhasing
+      tuple chr, file(InputToSnpQc) from InputToSnpQcPostPhasing
 
     output:
       file ("af_after_phasing.chr${chr}.afreq") into af_file_after_phasing

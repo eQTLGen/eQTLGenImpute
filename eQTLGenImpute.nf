@@ -311,7 +311,7 @@ process CalculateSnpQcMetricsPostFixref {
     publishDir "${params.outdir}/allele_frequencies/", mode: 'copy', pattern: "*.afreq", overwrite: true
 
     input:
-      tuple chr, file(InputToSnpQc), file(InputToSnpQc_index) from InputToSnpQcFromFixref
+      tuple chr, file(InputToSnpQc) from InputToSnpQcFromFixref
 
     output:
       file ("af_post_fixref.chr${chr}.afreq") into af_file_from_fixref
